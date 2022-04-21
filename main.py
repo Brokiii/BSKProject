@@ -1,9 +1,13 @@
-if __name__ == '__main__':
-    print("Essa2essa:DD")
+from client import connect
+from client import create_and_save_RSA_keys
+from client import get_rsa_keys
 
-    a = 5
-    b = 7
-    c = 10
-    d = a+b+c
+
+if __name__ == '__main__':
+    # client = connect()
+    create_and_save_RSA_keys("gibon", "ECB")
+    x1,x2 = get_rsa_keys("gibon", "ECB")
+
+
 
 
