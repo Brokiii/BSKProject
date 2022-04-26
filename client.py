@@ -10,11 +10,13 @@ from Crypto.Random import get_random_bytes
 from Crypto.Cipher import PKCS1_OAEP
 from GlobalVariables import PASSWORD, MODE
 
+import tkinter as tk
 
 host = '127.0.0.1'
 port = 55555
 OTHER_PUBLIC_KEY = None
 ACTUAL_SESSION_KEY = None
+licznik = 0
 
 
 def connect():
@@ -106,7 +108,7 @@ def receive(client):
             deserialized_frame = pickle.loads(message)
             if deserialized_frame.type == "PublicKey":
                 OTHER_PUBLIC_KEY = deserialized_frame.data
-                print(OTHER_PUBLIC_KEY)
+                print("Wymiana kluczy publicznych przebiegła pomyślnie")
             elif deserialized_frame.type == "Text":
                 print(decrypt_AES(deserialized_frame.data, ACTUAL_SESSION_KEY, deserialized_frame.mode))
             elif deserialized_frame.type == "SessionKey":
@@ -127,7 +129,6 @@ def write(client):
     while True:
         message = input("Napisz cos:")
         message = bytes(message, encoding='utf-8')
-
         session_key = create_session_key()
         cipher_rsa = PKCS1_OAEP.new(RSA.import_key(OTHER_PUBLIC_KEY))  # stworzenie ciphera
         encrypted_session_key = cipher_rsa.encrypt(session_key)  # zaszyfrowanie klucza sesyjnego
@@ -140,8 +141,25 @@ def write(client):
         serialized_frame2 = pickle.dumps(text_frame)
         client.send(serialized_frame2)
 
+def write2(client,msg_to_send):
+    global OTHER_PUBLIC_KEY
+    global licznik
+    while True:
+        licznik = licznik + 1
+        print(licznik)
+        message = bytes(msg_to_send, encoding='utf-8')
 
+        session_key = create_session_key()
+        cipher_rsa = PKCS1_OAEP.new(RSA.import_key(OTHER_PUBLIC_KEY))  # stworzenie ciphera
+        encrypted_session_key = cipher_rsa.encrypt(session_key)  # zaszyfrowanie klucza sesyjnego
+        session_frame = Frame("SessionKey", encrypted_session_key)  # stworzenie ramki z kluczem sesyjnym
+        serialized_frame = pickle.dumps(session_frame)  # serializacja ramki z kluczem sesyjnym
+        client.send(serialized_frame)  # wyslanie klucza sesyjnego
 
+        encrypted_message = encrypt_AES(message, session_key, MODE)  # zaszyfrowanie wiadomosci
+        text_frame = Frame("Text", encrypted_message, MODE)
+        serialized_frame2 = pickle.dumps(text_frame)
+        client.send(serialized_frame2)
 
 def start_threads(client):
     receive_thread = threading.Thread(target=receive, args=(client,))
@@ -161,3 +179,57 @@ def sendPublicKey(client, mode, password):
 
 def create_session_key():
     return get_random_bytes(32)
+
+
+def gui(client):
+    root = tk.Tk()
+    root.title("Chatbox 1.0")
+
+    # def send_test2(msg):
+    #     value = ""
+    #     if var1.get() == 1:
+    #         value = value + "CBC: "
+    #     elif var1.get() == 2:
+    #         value = value + "ECB: "
+    #
+    #     value = value + msg.get() + '\n'
+    #     chatbox.insert(1.0, value)
+    #     msg.delete(0, tk.END)
+
+
+    canvas = tk.Canvas(root, width=700, height=450)
+    canvas.grid(columnspan=4, rowspan =16)
+
+    #chatbox
+    label = tk.Label(root, text="Chatbox")
+    label.grid(columnspan = 2, column = 2, row = 0)
+
+    chatbox = tk.Text(root, height=20, width=30, padx=15, pady=15)
+    chatbox.grid(columnspan=2, column=2, row=1, rowspan=14)
+
+    # radiobuttony
+    label3 = tk.Label(root, text="Choose encryption mode")
+    label3.grid(columnspan=2, column=0, row=0)
+
+    var1 = tk.IntVar()
+    radio1 = tk.Radiobutton(root, text="CBC", variable=var1, value=1)
+    radio2 = tk.Radiobutton(root, text="EBC", variable=var1, value=2)
+    radio1.grid(column=0, row=1)
+    radio2.grid(column=1, row=1)
+    radio1.invoke()
+
+
+    #pole na wiadomosc
+    label2 = tk.Label(root, text="Enter your message")
+    label2.grid(columnspan=2, column=0, row=2)
+    message = tk.Entry(root, width=55)
+    message.grid(columnspan=2, column=0, row=3)
+
+    #przycisk
+    button_text = tk.StringVar()
+    button_text.set("Wyślij")
+    send_button = tk.Button(root, textvariable=button_text, bg="red", fg="white", height=2, width=15, command=lambda: write2(client, message.get()))
+    send_button.grid(columnspan=2, column=0, row=4)
+
+
+    root.mainloop()
