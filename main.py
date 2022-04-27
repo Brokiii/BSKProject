@@ -7,7 +7,7 @@ if __name__ == '__main__':
     client = connect()
     create_and_save_RSA_keys(PASSWORD, MODE)
     public, private = get_rsa_keys(PASSWORD, MODE)
-    start_threads(client)
+    #start_threads(client)
     sendPublicKey(client, MODE, PASSWORD)
     # client =5
     gui(client)
