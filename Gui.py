@@ -1,7 +1,67 @@
 import threading
 import tkinter as tk
+from tkinter import filedialog as fd
 
-from Client import write, receive
+from Client import write, receive, send_file
+
+
+def create_chatbox(root):
+    label = tk.Label(root, text="Chatbox")
+    label.grid(columnspan=2, column=2, row=0)
+
+    chatbox = tk.Text(root, height=20, width=30, padx=15, pady=15)
+    chatbox.grid(columnspan=2, column=2, row=1, rowspan=14)
+
+    return chatbox
+
+
+def create_nickname_label(root):
+    label = tk.Label(root, text="Enter your nickname")
+    label.grid(columnspan=2, column=0, row=0)
+    nickname = tk.Entry(root, width=30)
+    nickname.grid(columnspan=2, column=0, row=1)
+    nickname.insert(tk.END, "Default nickname")
+
+    return nickname
+
+
+def create_radio_buttons(root):
+    label = tk.Label(root, text="Choose encryption mode")
+    label.grid(columnspan=2, column=0, row=2)
+
+    var1 = tk.StringVar()
+    radio1 = tk.Radiobutton(root, text="CBC", variable=var1, value="CBC")
+    radio2 = tk.Radiobutton(root, text="ECB", variable=var1, value="ECB")
+    radio1.grid(column=0, row=3)
+    radio2.grid(column=1, row=3)
+    radio1.invoke()
+
+    return var1
+
+
+def create_message_label(root):
+    label = tk.Label(root, text="Enter your message")
+    label.grid(columnspan=2, column=0, row=4)
+    message = tk.Entry(root, width=55)
+    message.grid(columnspan=2, column=0, row=5)
+
+    return message
+
+
+def select_file(client, storage):
+    filetypes = (
+        ('text files', '*.txt'),
+        ('photo files', '*.png'),
+        ('pdf files', '*.pdf'),
+        ('video files', '*.avi')
+    )
+
+    filename = fd.askopenfilename(
+        title='Choose a file',
+        filetypes=filetypes
+    )
+
+    send_file(client, filename, storage)
 
 
 def gui(client, storage):
@@ -11,43 +71,22 @@ def gui(client, storage):
     canvas = tk.Canvas(root, width=700, height=450)
     canvas.grid(columnspan=4, rowspan=16)
 
-    # chatbox
-    label = tk.Label(root, text="Chatbox")
-    label.grid(columnspan=2, column=2, row=0)
+    chatbox = create_chatbox(root)
+    nickname = create_nickname_label(root)
+    radio_mode = create_radio_buttons(root)
+    message = create_message_label(root)
 
-    chatbox = tk.Text(root, height=20, width=30, padx=15, pady=15)
-    chatbox.grid(columnspan=2, column=2, row=1, rowspan=14)
-
-    # nick użytkownika
-    label4 = tk.Label(root, text="Enter your nickname")
-    label4.grid(columnspan=2, column=0, row=0)
-    nickname = tk.Entry(root, width=30)
-    nickname.grid(columnspan=2, column=0, row=1)
-    nickname.insert(tk.END, "Default nickname")
-
-    # radiobuttony
-    label3 = tk.Label(root, text="Choose encryption mode")
-    label3.grid(columnspan=2, column=0, row=2)
-
-    var1 = tk.StringVar()
-    radio1 = tk.Radiobutton(root, text="CBC", variable=var1, value="CBC")
-    radio2 = tk.Radiobutton(root, text="ECB", variable=var1, value="ECB")
-    radio1.grid(column=0, row=3)
-    radio2.grid(column=1, row=3)
-    radio1.invoke()
-
-    # pole na wiadomosc
-    label2 = tk.Label(root, text="Enter your message")
-    label2.grid(columnspan=2, column=0, row=4)
-    message = tk.Entry(root, width=55)
-    message.grid(columnspan=2, column=0, row=5)
-
-    # przycisk
+    # Send button
     button_text = tk.StringVar()
     button_text.set("Send")
     send_button = tk.Button(root, textvariable=button_text, bg="red", fg="white", height=2, width=15,
-                            command=lambda: write(client, message.get(), var1.get(), nickname.get(), chatbox, storage))
+                            command=lambda: write(client, message.get(), radio_mode.get(), nickname.get(), chatbox,
+                                                  storage))
     send_button.grid(columnspan=2, column=0, row=6)
+
+    file_button = tk.Button(root, text="Choose a file and send it PYCZARM", bg="red", fg="white", height=2, width=30,
+                            command=lambda: select_file(client, storage))
+    file_button.grid(columnspan=2, column=0, row=7)
 
     receive_thread = threading.Thread(target=receive, args=(client, chatbox, storage))
     receive_thread.start()
