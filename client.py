@@ -218,7 +218,7 @@ def gui(client):
 
     #przycisk
     button_text = tk.StringVar()
-    button_text.set("Wyślij")
+    button_text.set("Send")
     send_button = tk.Button(root, textvariable=button_text, bg="red", fg="white", height=2, width=15,
                                     command=lambda: write2(client, message.get(), var1.get(), nickname.get(), chatbox))
     send_button.grid(columnspan=2, column=0, row=6)
