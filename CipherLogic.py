@@ -53,27 +53,28 @@ def decrypt_AES(encrypted_data, password, mode):
     return unpad(cipher.decrypt(encrypted_data), AES.block_size)
 
 
-def create_and_save_RSA_keys(password, mode):
+def create_and_save_RSA_keys(storage):
     key = RSA.generate(2048)
 
-    encrypted_private_key = encrypt_AES(key.export_key(), password, mode)
+    encrypted_private_key = encrypt_AES(key.export_key(), storage.password, storage.mode)
     save_to_file("PrivateKey/private.bin", encrypted_private_key)
 
-    encrypted_public_key = encrypt_AES(key.publickey().export_key(), password, mode)
+    encrypted_public_key = encrypt_AES(key.publickey().export_key(), storage.password, storage.mode)
     save_to_file("PublicKey/public.bin", encrypted_public_key)
 
 
-def get_rsa_keys(password, mode):
+def get_rsa_keys(storage):
     encrypted_public_key = open("PublicKey/public.bin", "rb").read()
-    decrypted_public_key = decrypt_AES(encrypted_public_key, password, mode)
+    decrypted_public_key = decrypt_AES(encrypted_public_key, storage.password, storage.mode)
 
     encrypted_private_key = open("PrivateKey/private.bin", "rb").read()
-    decrypted_private_key = decrypt_AES(encrypted_private_key, password, mode)
+    decrypted_private_key = decrypt_AES(encrypted_private_key, storage.password, storage.mode)
 
     return decrypted_public_key, decrypted_private_key
 
-def sendPublicKey(client, mode, password):
-    public, _ = get_rsa_keys(password, mode)
+
+def sendPublicKey(client, storage):
+    public, _ = get_rsa_keys(storage)
     frame = Frame("PublicKey", public)
     serialized_frame = pickle.dumps(frame)
     client.send(serialized_frame)

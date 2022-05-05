@@ -1,18 +1,20 @@
-from CipherLogic import create_and_save_RSA_keys, get_rsa_keys, sendPublicKey
+from CipherLogic import create_and_save_RSA_keys, sendPublicKey
 from Client import connect
-from GlobalVariables import PASSWORD, MODE
 from Gui import gui
+from Storage import Storage
 
 
 def main():
-    client = connect()
-    create_and_save_RSA_keys(PASSWORD, MODE)
-    public, private = get_rsa_keys(PASSWORD, MODE)
-    # start_threads(client)
-    sendPublicKey(client, MODE, PASSWORD)
-    # client =5
-    gui(client)
-    # test
+    storage = Storage()
+    storage.password = "rakieta"
+    storage.mode = "CBC"
+    storage.other_public_key = ""
+    storage.actual_session_key = ""
+
+    client = connect('127.0.0.1', 55555)
+    create_and_save_RSA_keys(storage)
+    sendPublicKey(client, storage)
+    gui(client, storage)
 
 
 if __name__ == '__main__':
