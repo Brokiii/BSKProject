@@ -1,14 +1,19 @@
-from client import connect
-from client import create_and_save_RSA_keys
-from client import get_rsa_keys, start_threads, sendPublicKey, encrypt_AES, decrypt_AES, gui
+from CipherLogic import create_and_save_RSA_keys, get_rsa_keys, sendPublicKey
+from Client import connect
 from GlobalVariables import PASSWORD, MODE
+from Gui import gui
 
-if __name__ == '__main__':
+
+def main():
     client = connect()
     create_and_save_RSA_keys(PASSWORD, MODE)
     public, private = get_rsa_keys(PASSWORD, MODE)
-    #start_threads(client)
+    # start_threads(client)
     sendPublicKey(client, MODE, PASSWORD)
     # client =5
     gui(client)
-    #test
+    # test
+
+
+if __name__ == '__main__':
+    main()
