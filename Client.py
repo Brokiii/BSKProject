@@ -44,15 +44,8 @@ def receive(client, chatbox, storage):
             elif deserialized_frame.type == "PreFile":
                 filename = deserialized_frame.filename
                 filesize = deserialized_frame.filesize
-                with open(filename, "wb") as f:
-                    while True:
-                        file_frame = client.recv(storage.buffer_size)
-                        frame = pickle.loads(file_frame)
-                        if frame.type != "File":
-                            continue
-                        if not frame.data:
-                            break
-                        f.write(frame.data)
+                with open(filename, "a+b") as f:
+                    f.write(deserialized_frame.data)
         except:
             print("Receive error!")
             client.close()
@@ -81,16 +74,15 @@ def send_file(client, filepath, storage):
     filesize = os.path.getsize(filepath)
     filename = os.path.basename(filepath)
 
-    prefile_frame = Frame("PreFile", "", filesize=filesize, filename=filename)
-    serialized_prefile_frame = pickle.dumps(prefile_frame)
-    client.send(serialized_prefile_frame)
-
     progress = tqdm.tqdm(range(filesize), f"Sending {filepath}", unit="B", unit_scale=True, unit_divisor=1024)
+
     with open(filepath, "rb") as f:
         while True:
-            bytes_read = f.read(2048)
+            bytes_read = f.read(2000)
+
             if not bytes_read:
                 break
+
             frame = Frame("File", bytes_read, filename=filename, filesize=filesize)
             serialized_frame = pickle.dumps(frame)
             client.send(serialized_frame)

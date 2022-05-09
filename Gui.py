@@ -84,11 +84,11 @@ def gui(client, storage):
                                                   storage))
     send_button.grid(columnspan=2, column=0, row=6)
 
-    file_button = tk.Button(root, text="Choose a file and send it PYCZARM", bg="red", fg="white", height=2, width=30,
+    receive_thread = threading.Thread(target=receive, args=(client, chatbox, storage))
+
+    file_button = tk.Button(root, text="Choose a file and send it PYCZ", bg="red", fg="white", height=2, width=30,
                             command=lambda: select_file(client, storage))
     file_button.grid(columnspan=2, column=0, row=7)
-
-    receive_thread = threading.Thread(target=receive, args=(client, chatbox, storage))
     receive_thread.start()
 
     root.mainloop()
