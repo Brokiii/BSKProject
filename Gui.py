@@ -60,7 +60,7 @@ def select_file(client, storage):
         title='Choose a file',
         filetypes=filetypes
     )
-
+    print(filename)
     send_file(client, filename, storage)
 
 
@@ -85,10 +85,10 @@ def gui(client, storage):
     send_button.grid(columnspan=2, column=0, row=6)
 
     receive_thread = threading.Thread(target=receive, args=(client, chatbox, storage))
+    receive_thread.start()
 
     file_button = tk.Button(root, text="Choose a file and send it PYCZ", bg="red", fg="white", height=2, width=30,
                             command=lambda: select_file(client, storage))
     file_button.grid(columnspan=2, column=0, row=7)
-    receive_thread.start()
 
     root.mainloop()

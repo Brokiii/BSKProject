@@ -27,7 +27,7 @@ def connect(host, port):
 def receive(client, chatbox, storage):
     while True:
         try:
-            message = client.recv(storage.buffer_size)
+            message = client.recv(storage.buffer_size + 108)
             deserialized_frame = pickle.loads(message)
             if deserialized_frame.type == "PublicKey":
                 storage.other_public_key = deserialized_frame.data
@@ -41,11 +41,11 @@ def receive(client, chatbox, storage):
                 private = RSA.import_key(private)
                 cipher = PKCS1_OAEP.new(private)
                 storage.actual_session_key = cipher.decrypt(deserialized_frame.data)
-            elif deserialized_frame.type == "PreFile":
-                filename = deserialized_frame.filename
-                filesize = deserialized_frame.filesize
-                with open(filename, "a+b") as f:
+            elif deserialized_frame.type == "File":
+                with open(storage.filename, "a+b") as f:
                     f.write(deserialized_frame.data)
+            elif deserialized_frame.type == "PreFile":
+                storage.filename = deserialized_frame.data
         except:
             print("Receive error!")
             client.close()
@@ -74,16 +74,19 @@ def send_file(client, filepath, storage):
     filesize = os.path.getsize(filepath)
     filename = os.path.basename(filepath)
 
-    progress = tqdm.tqdm(range(filesize), f"Sending {filepath}", unit="B", unit_scale=True, unit_divisor=1024)
+    preframe = Frame("PreFile", data=filename)
+    serialized_preframe = pickle.dumps(preframe)
+    client.send(serialized_preframe)
 
+    progress = tqdm.tqdm(range(filesize), f"Sending {filepath}", unit="B", unit_scale=True, unit_divisor=1024)
     with open(filepath, "rb") as f:
         while True:
-            bytes_read = f.read(2000)
+            bytes_read = f.read(storage.buffer_size)
 
             if not bytes_read:
                 break
 
-            frame = Frame("File", bytes_read, filename=filename, filesize=filesize)
+            frame = Frame("File", data=bytes_read)
             serialized_frame = pickle.dumps(frame)
             client.send(serialized_frame)
             progress.update(len(bytes_read))
