@@ -1,2 +1,0 @@
-MODE = "CBC"
-PASSWORD = "rakieta"
