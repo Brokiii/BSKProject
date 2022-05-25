@@ -1,6 +1,6 @@
 class Frame:
 
-    def __init__(self, type, data, nickname="", mode="", filename="", filesize="", size=0):
+    def __init__(self, type, data, nickname="", mode=""):
         self.type = type
         self.data = data
         self.nickname = nickname

@@ -2,7 +2,6 @@ import threading
 import tkinter as tk
 from tkinter import filedialog as fd
 from tkinter import ttk
-import time
 
 from Client import write, receive, send_file
 
@@ -91,7 +90,7 @@ def gui(client, storage):
     receive_thread = threading.Thread(target=receive, args=(client, chatbox, storage))
     receive_thread.start()
 
-    file_button = tk.Button(root, text="Choose a file and send it PYCZ", bg="red", fg="white", height=2, width=30,
+    file_button = tk.Button(root, text="Choose a file and send it", bg="red", fg="white", height=2, width=30,
                             command=lambda: select_file(client, storage, progress_bar, nickname.get(), radio_mode.get(),
                                                         chatbox))
     file_button.grid(columnspan=2, column=0, row=10)
