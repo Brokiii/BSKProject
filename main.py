@@ -17,13 +17,12 @@ from Crypto.Cipher import PKCS1_OAEP
 
 
 def main():
-    storage = Storage(password="rakieta", mode="CBC", buffer_size=4096) #108
+    storage = Storage(password="rakieta", mode="CBC", buffer_size=1048576) #1048576
 
     client = connect('127.0.0.1', 55555)
     create_and_save_RSA_keys(storage)
     sendPublicKey(client, storage)
     gui(client, storage)
-
 
 if __name__ == '__main__':
     main()

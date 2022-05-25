@@ -1,6 +1,8 @@
 import threading
 import tkinter as tk
 from tkinter import filedialog as fd
+from tkinter import ttk
+import time
 
 from Client import write, receive, send_file
 
@@ -48,7 +50,7 @@ def create_message_label(root):
     return message
 
 
-def select_file(client, storage):
+def select_file(client, storage, progress_bar, nickname, mode, chatbox):
     filetypes = (
         ('text files', '*.txt'),
         ('photo files', '*.png'),
@@ -60,8 +62,10 @@ def select_file(client, storage):
         title='Choose a file',
         filetypes=filetypes
     )
-    print(filename)
-    send_file(client, filename, storage)
+
+    send_file_thread = threading.Thread(target=send_file,
+                                        args=(client, filename, storage, progress_bar, nickname, mode, chatbox))
+    send_file_thread.start()
 
 
 def gui(client, storage):
@@ -88,7 +92,13 @@ def gui(client, storage):
     receive_thread.start()
 
     file_button = tk.Button(root, text="Choose a file and send it PYCZ", bg="red", fg="white", height=2, width=30,
-                            command=lambda: select_file(client, storage))
-    file_button.grid(columnspan=2, column=0, row=7)
+                            command=lambda: select_file(client, storage, progress_bar, nickname.get(), radio_mode.get(),
+                                                        chatbox))
+    file_button.grid(columnspan=2, column=0, row=10)
+
+    progress_bar = ttk.Progressbar(root, orient='horizontal', mode='determinate', length=350)
+    progress_bar.grid(columnspan=2, column=0, row=11)
+    progress_bar_label = tk.Label(root, text="Uploading file progress bar")
+    progress_bar_label.grid(columnspan=2, column=0, row=12)
 
     root.mainloop()
