@@ -49,8 +49,11 @@ def encrypt_AES(data, password, mode):
 
 
 def decrypt_AES(encrypted_data, password, mode):
-    cipher = create_cipher(password, mode)
-    return unpad(cipher.decrypt(encrypted_data), AES.block_size)
+    try:
+        cipher = create_cipher(password, mode)
+        return unpad(cipher.decrypt(encrypted_data), AES.block_size)
+    except:
+        return get_random_bytes(32)
 
 
 def create_and_save_RSA_keys(storage):
